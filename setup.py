@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 setup(
     name="elvira-elasticsearch-client",
     version="0.1.0",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=find_packages(where="elvira_elasticsearch_client"),
+    package_dir={"": "elvira_elasticsearch_client"},
     install_requires=[
         "elasticsearch[async]>=8.6.0",
         "python-decouple>=3.6"
