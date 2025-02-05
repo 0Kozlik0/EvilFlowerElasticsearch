@@ -18,11 +18,11 @@ class ElasticsearchClient:
 
     async def check_connection(self) -> bool:
         """Check if the connection to Elasticsearch is alive"""
-        # try:
-        await self.client.info()
-        return True
-        # except Exception:
-        #     return False
+        try:
+            await self.client.info()
+            return True
+        except Exception:
+            return False
     
     async def close(self):
         """Close the Elasticsearch connection"""
