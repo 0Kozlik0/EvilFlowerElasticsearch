@@ -11,28 +11,30 @@ class ElasticsearchClient:
             cls._instance.initialize()
         return cls._instance
 
-    def initialize(self):
+    def _initialize(self):
         elasticsearch_url = config('ELASTICSEARCH_URL', default="http://elasticsearch:9200")
         self.client = AsyncElasticsearch([elasticsearch_url])
 
-    async def index_document(self, index_name: str, document: Dict[str, Any], document_id: Optional[str] = None) -> Dict:
-        """Index a document in Elasticsearch"""
-        response = await self.client.index(
-            index=index_name,
-            document=document,
-            id=document_id,
-            refresh=True
-        )
-        return response
-
-    async def search_documents(self, index_name: str, query: Dict) -> Dict:
-        """Search for documents in Elasticsearch"""
-        response = await self.client.search(
-            index=index_name,
-            body=query
-        )
-        return response
-
+    async def check_connection(self) -> bool:
+        """Check if the connection to Elasticsearch is alive"""
+        try:
+            await self.client.info()
+            return True
+        except Exception:
+            return False
+    
     async def close(self):
         """Close the Elasticsearch connection"""
         await self.client.close()
+
+    async def save_extracted_text_to_elasticsearch(self) -> Dict:
+        pass
+
+    async def save_extracted_image_to_elasticsearch(self) -> Dict:
+        pass
+
+    async def save_extracted_video_to_elasticsearch(self) -> Dict:
+        pass
+
+    async def save_extracted_equations_to_elasticsearch(self) -> Dict:
+        pass
