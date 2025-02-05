@@ -16,4 +16,6 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/0Kozlik0/EvilFlowerElasticsearch",
+    package_data={"elvira_elasticsearch_client": ["py.typed"]},
+    zip_safe=False,
 )
