@@ -12,16 +12,17 @@ class ElasticsearchClient:
         return cls._instance
 
     def _initialize(self):
-        elasticsearch_url = config('ELASTICSEARCH_URL', default="http://elasticsearch:9200")
+        elasticsearch_url = config('ELASTICSEARCH_URL', default="http://localhost:9200")
+        print(elasticsearch_url)
         self.client = AsyncElasticsearch([elasticsearch_url])
 
     async def check_connection(self) -> bool:
         """Check if the connection to Elasticsearch is alive"""
-        try:
-            await self.client.info()
-            return True
-        except Exception:
-            return False
+        # try:
+        await self.client.info()
+        return True
+        # except Exception:
+        #     return False
     
     async def close(self):
         """Close the Elasticsearch connection"""
