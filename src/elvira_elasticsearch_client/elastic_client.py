@@ -29,10 +29,51 @@ class ElasticsearchClient:
         """Close the Elasticsearch connection"""
         await self.client.close()
 
-    async def save_extracted_metadata_to_elasticsearch(self) -> Dict:
-        pass
+    async def save_extracted_metadata_to_elasticsearch(self, document_id: str, metadata: Dict) -> Dict:
+        # Check connection to Elasticsearch
+        if not await self.check_connection():
+            return {"status": "error", "message": "Cannot connect to Elasticsearch"}
+        
+        try:
+            # Create document metadata
+            doc_metadata = {
+                "document_id": document_id,
+                "timestamp": datetime.now().isoformat()
+            }
 
-    async def save_extracted_text_to_elasticsearch(self, document_id: str, text_data: List[str], metadata: Optional[dict] = None) -> Dict:
+            # Add metadata 
+            doc_metadata.update(metadata["processed_metadata"])
+            doc_metadata.update(metadata["toc"])
+
+            # Index the document
+            result = await self.client.index(
+                index="documents", 
+                id=document_id,
+                document=doc_metadata,
+                refresh=True
+            )
+            
+            if result["result"] == "created" or result["result"] == "updated":
+                return {
+                    "status": "success",
+                    "document_id": document_id,
+                    "message": "Metadata indexed successfully"
+                }
+            else:
+                return {
+                    "status": "error",
+                    "document_id": document_id,
+                    "message": f"Failed to index metadata: {result}"
+                }
+            
+        except Exception as e:
+            return {
+                "status": "error",
+                "document_id": document_id,
+                "message": str(e)
+            }
+
+    async def save_extracted_text_to_elasticsearch(self, document_id: str, text_data: List[str]) -> Dict:
         """Save extracted text data to Elasticsearch using approach with multiple indices"""
 
         # Check connection to Elasticsearch
@@ -45,21 +86,6 @@ class ElasticsearchClient:
             sentences = text_data[2]  # Get all sentences by paragraph
             
             bulk_operations = [] # Array for bulk operations
-            
-            # Create document in "documents" index
-            doc_metadata = {
-                "document_id": document_id,
-                # "full_text": " ".join(pages),
-                "timestamp": datetime.now().isoformat()
-            }
-            
-            # Add metadata if provided
-            if metadata:
-                doc_metadata.update(metadata)
-            
-            # Add document to bulk operations
-            bulk_operations.append({"index": {"_index": "documents", "_id": document_id}})
-            bulk_operations.append(doc_metadata)
             
             # Add pages to "pages" index
             for page_idx, page_text in enumerate(pages):
